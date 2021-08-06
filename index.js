@@ -1,4 +1,4 @@
-// @ts-check
+#!/usr/bin/env node
 const { writeFile } = require('fs-extra');
 const prettier = require('prettier');
 const path = require('path');
