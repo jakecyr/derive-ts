@@ -6,10 +6,8 @@
   "description": "Simple library to derive TypeScript interfaces from JS object examples",
   "main": "index.js",
   "bin": "index.js",
-  "devDependencies": {
-    "prettier": "^2.3.2"
-  },
   "dependencies": {
+    "prettier": "^2.3.2",
     "commander": "^8.1.0",
     "fs-extra": "^10.0.0"
   },
