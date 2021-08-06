@@ -2,7 +2,7 @@
 const { writeFile } = require('fs-extra');
 const prettier = require('prettier');
 const path = require('path');
-const { Command, parse } = require('commander');
+const { Command } = require('commander');
 const packageJson = require('./package.json');
 
 const identifyType = (value) => {
@@ -30,6 +30,48 @@ const identifyType = (value) => {
   }
 };
 
+/**
+ * Format a code string with the specified options
+ * @param {string} codeStr String of code to format with prettier
+ * @param {Record<string, unknown>} prettierConfig Prettier config options
+ * @returns 
+ */
+const prettifyCode = (codeStr, prettierConfig = {}) => {
+  return prettier.format(codeStr, {
+    parser: 'babel',
+    ...prettierConfig,
+  });
+};
+
+/**
+ * Derive a TypeScript interface from a JavaScript object
+ * @param {Record<string, unknown>} object
+ * @param {string} interfaceName Name for the generated interface
+ * @param {boolean} formatCode If the code should be prettified or not
+ * @returns {Promise<string>}
+ */
+const deriveInterfaceFromObject = async (
+  object,
+  interfaceName = 'MyInterface',
+  formatCode = true,
+) => {
+  const code = await identifyType(object);
+
+  if (!formatCode) {
+    return code;
+  }
+
+  let formattedCode = code;
+
+  try {
+    formattedCode = prettifyCode(`export interface ${interfaceName} ${code}`);
+  } catch (error) {
+    console.error('Error formatting code. Trying to save anyways', error);
+  }
+
+  return formattedCode;
+};
+
 if (require.main === module) {
   const program = new Command();
 
@@ -40,7 +82,14 @@ if (require.main === module) {
     .option('-i, --import-name <importNam>', 'Name of the object exported from the specified file')
     .option('-o, --output-file <outputFilePath>', 'File to save the interface to')
     .action(async (inputFilePath, { interfaceName = 'MyInterface', importName, outputFile }) => {
-      const jsFile = require(inputFilePath);
+      const resolvedInputFilePath = path.join(process.cwd(), inputFilePath);
+      let requirePath = path.relative(__dirname, resolvedInputFilePath);
+
+      if (!requirePath.includes('/')) {
+        requirePath = './' + requirePath;
+      }
+
+      const jsFile = require(requirePath);
       let objectToDeriveFrom = null;
 
       if (importName) {
@@ -49,24 +98,24 @@ if (require.main === module) {
         objectToDeriveFrom = jsFile;
       }
 
-      const code = await identifyType(objectToDeriveFrom);
-
-      let formattedCode = code;
-
-      try {
-        formattedCode = prettier.format(`export interface ${interfaceName} ${code}`, {
-          parser: 'babel',
-        });
-      } catch (error) {
-        console.error('Error formatting code. Trying to save anyways', error);
-      }
+      const formattedCode = await deriveInterfaceFromObject(
+        objectToDeriveFrom,
+        interfaceName,
+        true,
+      );
 
       if (!outputFile) {
         return console.log(formattedCode);
       }
 
-      await writeFile(path.resolve(outputFile), formattedCode);
+      const resolvedOutputFilePath = path.join(process.cwd(), outputFile);
+      await writeFile(resolvedOutputFilePath, formattedCode);
     });
 
-  program.parse(process.argv)
+  program.parse(process.argv);
 }
+
+module.exports = {
+  deriveInterfaceFromObject,
+  prettifyCode,
+};

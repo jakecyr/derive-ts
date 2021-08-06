@@ -2,6 +2,36 @@
 
 Simple functions to derive a TypeScript interface from a JavaScript object example.
 
+## Import Function
+
+The `deriveInterfaceFromObject` function can be imported and used in code also. The `deriveInterfaceFromObject` function accepts three parameters: a JavaScript object to convert to a TypeScript interface, an interface name to use in the generated TypeScript, and optionally a boolean flag if the code should be prettified or not (defaults to true).
+
+For example:
+
+```javascript
+const { deriveInterfaceFromObject } = require('derive-ts');
+
+deriveInterfaceFromObject({ a: 1, b: 2, c: 3 }, 'MyInterface', true)
+  .then((typeScriptInterfaceString) => {
+    console.log(typeScriptInterfaceString);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+```
+
+The above will log the following:
+
+```typescript
+export interface MyInterface {
+  a: number;
+  b: number;
+  c: number;
+}
+```
+
+The `prettifyCode` code function is also exported from the library so you can pass in your own prettier options to format the generated TypeScript. It accepts two parameters: the code string to format and an object with the prettier options.
+
 ## CLI
 
 ### derive
