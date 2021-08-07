@@ -34,20 +34,31 @@ The `prettifyCode` code function is also exported from the library so you can pa
 
 ## CLI
 
+The CLI can be used by installing the `derive-ts` package or with `npx`:
+
+```bash
+npm install --global derive-ts
+derive-ts derive examples/example.js -n Test -i example -o output.ts
+
+# OR
+
+npx derive-ts derive examples/example.js -n Test -i example -o output.ts
+```
+
 ### derive
 
 This is the main command that accepts parameters of a JavaScript file containing the example object to derive the TypeScript interface from.
 
 #### Arguments
 
-**-n, --interface-name <name>**
-Name of the outputted interface')
+**-n, --interface-name &lt;name&gt;**
+Name of the outputted interface
 
-**-i, --import-name <importNam>**
-Name of the object exported from the specified file')
+**-i, --import-name &lt;importName&gt;**
+Name of the object exported from the specified file
 
-**-o, --output-file <outputFilePath>**
-File to save the interface to')
+**-o, --output-file &lt;outputFilePath&gt;**
+File to save the interface to
 
 ## Example
 
