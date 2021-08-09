@@ -5,7 +5,9 @@ const path = require('path');
 const { Command } = require('commander');
 const packageJson = require('./package.json');
 
-const identifyType = (value) => {
+let interfaces = {};
+
+const identifyType = (value, key) => {
   if (typeof value === 'string') {
     return 'string';
   } else if (typeof value === 'number') {
@@ -21,11 +23,19 @@ const identifyType = (value) => {
   } else if (value === undefined || value === null) {
     return 'unknown';
   } else {
+    const subInterface = Object.keys(value)
+      .map((key) => `${key}: ${identifyType(value[key], key)}`)
+      .join(';\n');
+
+    if (!key) {
+      console.warn('No key');
+    }
+
+    interfaces[key] = subInterface;
+
     return `
       {
-        ${Object.keys(value)
-          .map((key) => `${key}: ${identifyType(value[key])}`)
-          .join(';\n')}
+        ${subInterface}
       }`;
   }
 };
@@ -34,7 +44,7 @@ const identifyType = (value) => {
  * Format a code string with the specified options
  * @param {string} codeStr String of code to format with prettier
  * @param {Record<string, unknown>} prettierConfig Prettier config options
- * @returns 
+ * @returns
  */
 const prettifyCode = (codeStr, prettierConfig = {}) => {
   return prettier.format(codeStr, {
@@ -55,7 +65,7 @@ const deriveInterfaceFromObject = async (
   interfaceName = 'MyInterface',
   formatCode = true,
 ) => {
-  const code = await identifyType(object);
+  const code = await identifyType(object, interfaceName);
 
   if (!formatCode) {
     return code;
@@ -85,7 +95,7 @@ if (require.main === module) {
       const resolvedInputFilePath = path.join(process.cwd(), inputFilePath);
       let requirePath = path.relative(__dirname, resolvedInputFilePath);
 
-      if (!requirePath.includes('/')) {
+      if (!requirePath.startsWith('.')) {
         requirePath = './' + requirePath;
       }
 
@@ -110,6 +120,8 @@ if (require.main === module) {
 
       const resolvedOutputFilePath = path.join(process.cwd(), outputFile);
       await writeFile(resolvedOutputFilePath, formattedCode);
+
+      console.log(interfaces);
     });
 
   program.parse(process.argv);

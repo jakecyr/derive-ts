@@ -7,9 +7,10 @@
   "main": "index.js",
   "bin": "index.js",
   "dependencies": {
-    "prettier": "^2.3.2",
     "commander": "^8.1.0",
-    "fs-extra": "^10.0.0"
+    "fs-extra": "^10.0.0",
+    "lodash": "^4.17.21",
+    "prettier": "^2.3.2"
   },
   "scripts": {
     "start": "node index.js"

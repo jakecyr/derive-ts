@@ -2,6 +2,11 @@
 
 Simple functions to derive a TypeScript interface from a JavaScript object example.
 
+## Todo
+
+- make sure there aren't optional properties on other examples
+- prepend interfaces to file and use in place of objects in main interface
+
 ## Import Function
 
 The `deriveInterfaceFromObject` function can be imported and used in code also. The `deriveInterfaceFromObject` function accepts three parameters: a JavaScript object to convert to a TypeScript interface, an interface name to use in the generated TypeScript, and optionally a boolean flag if the code should be prettified or not (defaults to true).
