@@ -2,16 +2,27 @@
 
 Simple functions to derive a TypeScript interface from a JavaScript object example.
 
-## Todo
+## Installation
 
-- make sure there aren't optional properties on other examples
-- prepend interfaces to file and use in place of objects in main interface
+### CLI Installation
 
-## Import Function
+```bash
+npm install -g derive-ts
+# OR
+npx derive-ts
+```
 
-The `deriveInterfaceFromObject` function can be imported and used in code also. The `deriveInterfaceFromObject` function accepts three parameters: a JavaScript object to convert to a TypeScript interface, an interface name to use in the generated TypeScript, and optionally a boolean flag if the code should be prettified or not (defaults to true).
+### For Use in NodeJS
 
-For example:
+The deriveInterfaceFromObject function can be imported and used in code also. The deriveInterfaceFromObject function accepts three parameters: a JavaScript object to convert to a TypeScript interface, an interface name to use in the generated TypeScript, and optionally a boolean flag if the code should be prettified or not (defaults to true).
+
+Install the package locally in your project:
+
+```bash
+npm install --save derive-ts
+```
+
+and then:
 
 ```javascript
 const { deriveInterfaceFromObject } = require('derive-ts');
@@ -35,9 +46,9 @@ export interface MyInterface {
 }
 ```
 
-The `prettifyCode` code function is also exported from the library so you can pass in your own prettier options to format the generated TypeScript. It accepts two parameters: the code string to format and an object with the prettier options.
+The prettifyCode code function is also exported from the library so you can pass in your own prettier options to format the generated TypeScript. It accepts two parameters: the code string to format and an object with the prettier options.
 
-## CLI
+## CLI Usage
 
 The CLI can be used by installing the `derive-ts` package or with `npx`:
 
@@ -65,11 +76,11 @@ Name of the object exported from the specified file
 **-o, --output-file &lt;outputFilePath&gt;**
 File to save the interface to
 
-## Example
+#### Example
 
 A JavaScript file has been created called 'example.js' with the following contents:
 
-```javascript 
+```javascript
 exports.example = {
   address_components: [
     { long_name: '8035', short_name: '8035', types: ['street_number'] },
@@ -99,9 +110,9 @@ The following file is generated 'output.ts' with the contents:
 ```typescript
 export interface Test {
   address_components: {
-    long_name: string,
-    short_name: string,
-    types: string[],
+    long_name: string;
+    short_name: string;
+    types: string[];
   }[];
   adr_address: string;
   business_status: string;

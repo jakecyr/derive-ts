@@ -1,8 +1,12 @@
 {
   "name": "derive-ts",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "Jake Cyr",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jakecyr/derive-ts.git"
+  },
   "description": "Simple library to derive TypeScript interfaces from JS object examples",
   "main": "index.js",
   "bin": "index.js",
