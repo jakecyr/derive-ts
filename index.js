@@ -1,57 +1,9 @@
 #!/usr/bin/env node
 const { writeFile } = require('fs-extra');
-const prettier = require('prettier');
 const path = require('path');
 const { Command } = require('commander');
 const packageJson = require('./package.json');
-
-let interfaces = {};
-
-const identifyType = (value, key) => {
-  if (typeof value === 'string') {
-    return 'string';
-  } else if (typeof value === 'number') {
-    return 'number';
-  } else if (typeof value === 'boolean') {
-    return 'boolean';
-  } else if (Array.isArray(value)) {
-    if (value.length === 0) {
-      return 'unknown[]';
-    }
-
-    return `${identifyType(value[0])}[]`;
-  } else if (value === undefined || value === null) {
-    return 'unknown';
-  } else {
-    const subInterface = Object.keys(value)
-      .map((key) => `${key}: ${identifyType(value[key], key)}`)
-      .join(';\n');
-
-    if (!key) {
-      console.warn('No key');
-    }
-
-    interfaces[key] = subInterface;
-
-    return `
-      {
-        ${subInterface}
-      }`;
-  }
-};
-
-/**
- * Format a code string with the specified options
- * @param {string} codeStr String of code to format with prettier
- * @param {Record<string, unknown>} prettierConfig Prettier config options
- * @returns
- */
-const prettifyCode = (codeStr, prettierConfig = {}) => {
-  return prettier.format(codeStr, {
-    parser: 'babel',
-    ...prettierConfig,
-  });
-};
+const { identifyType, prettifyCode } = require('./helpers');
 
 /**
  * Derive a TypeScript interface from a JavaScript object
@@ -64,17 +16,38 @@ const deriveInterfaceFromObject = async (
   object,
   interfaceName = 'MyInterface',
   formatCode = true,
+  subInterfaces = false,
 ) => {
-  const code = await identifyType(object, interfaceName);
+  const interfaces = {};
+  const interfaceCode = await identifyType(object, null, subInterfaces ? interfaces : null);
+  const fullInterface = `export interface ${interfaceName} ${interfaceCode}`;
+  let allCode = null;
 
-  if (!formatCode) {
-    return code;
+  if (subInterfaces) {
+    allCode =
+      `
+      ${Object.keys(interfaces)
+        .map(
+          (key) => `
+        export interface ${key} {
+          ${interfaces[key]}
+        }
+      `,
+        )
+        .join('\n')}
+    ` + fullInterface;
+  } else {
+    allCode = fullInterface;
   }
 
-  let formattedCode = code;
+  if (!formatCode) {
+    return allCode;
+  }
+
+  let formattedCode = allCode;
 
   try {
-    formattedCode = prettifyCode(`export interface ${interfaceName} ${code}`);
+    formattedCode = prettifyCode(allCode);
   } catch (error) {
     console.error('Error formatting code. Trying to save anyways', error);
   }
@@ -91,38 +64,43 @@ if (require.main === module) {
     .option('-n, --interface-name <name>', 'Name of the outputted interface')
     .option('-i, --import-name <importNam>', 'Name of the object exported from the specified file')
     .option('-o, --output-file <outputFilePath>', 'File to save the interface to')
-    .action(async (inputFilePath, { interfaceName = 'MyInterface', importName, outputFile }) => {
-      const resolvedInputFilePath = path.join(process.cwd(), inputFilePath);
-      let requirePath = path.relative(__dirname, resolvedInputFilePath);
+    .option('-s, --sub-interfaces', 'Generate sub-interfaces and use in the main interface')
+    .action(
+      async (
+        inputFilePath,
+        { interfaceName = 'MyInterface', importName, outputFile, subInterfaces },
+      ) => {
+        const resolvedInputFilePath = path.join(process.cwd(), inputFilePath);
+        let requirePath = path.relative(__dirname, resolvedInputFilePath);
 
-      if (!requirePath.startsWith('.')) {
-        requirePath = './' + requirePath;
-      }
+        if (!requirePath.startsWith('.')) {
+          requirePath = './' + requirePath;
+        }
 
-      const jsFile = require(requirePath);
-      let objectToDeriveFrom = null;
+        const jsFile = require(requirePath);
+        let objectToDeriveFrom = null;
 
-      if (importName) {
-        objectToDeriveFrom = jsFile[importName];
-      } else {
-        objectToDeriveFrom = jsFile;
-      }
+        if (importName) {
+          objectToDeriveFrom = jsFile[importName];
+        } else {
+          objectToDeriveFrom = jsFile;
+        }
 
-      const formattedCode = await deriveInterfaceFromObject(
-        objectToDeriveFrom,
-        interfaceName,
-        true,
-      );
+        const formattedCode = await deriveInterfaceFromObject(
+          objectToDeriveFrom,
+          interfaceName,
+          true,
+          subInterfaces,
+        );
 
-      if (!outputFile) {
-        return console.log(formattedCode);
-      }
+        if (!outputFile) {
+          return console.log(formattedCode);
+        }
 
-      const resolvedOutputFilePath = path.join(process.cwd(), outputFile);
-      await writeFile(resolvedOutputFilePath, formattedCode);
-
-      console.log(interfaces);
-    });
+        const resolvedOutputFilePath = path.join(process.cwd(), outputFile);
+        await writeFile(resolvedOutputFilePath, formattedCode);
+      },
+    );
 
   program.parse(process.argv);
 }
