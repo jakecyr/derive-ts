@@ -3,57 +3,7 @@ const { writeFile } = require('fs-extra');
 const path = require('path');
 const { Command } = require('commander');
 const packageJson = require('./package.json');
-const { identifyType, prettifyCode } = require('./helpers');
-
-/**
- * Derive a TypeScript interface from a JavaScript object
- * @param {Record<string, unknown>} object
- * @param {string} interfaceName Name for the generated interface
- * @param {boolean} formatCode If the code should be prettified or not
- * @returns {Promise<string>}
- */
-const deriveInterfaceFromObject = async (
-  object,
-  interfaceName = 'MyInterface',
-  formatCode = true,
-  subInterfaces = false,
-) => {
-  const interfaces = {};
-  const interfaceCode = await identifyType(object, null, subInterfaces ? interfaces : null);
-  const fullInterface = `export interface ${interfaceName} ${interfaceCode}`;
-  let allCode = null;
-
-  if (subInterfaces) {
-    allCode =
-      `
-      ${Object.keys(interfaces)
-        .map(
-          (key) => `
-        export interface ${key} {
-          ${interfaces[key]}
-        }
-      `,
-        )
-        .join('\n')}
-    ` + fullInterface;
-  } else {
-    allCode = fullInterface;
-  }
-
-  if (!formatCode) {
-    return allCode;
-  }
-
-  let formattedCode = allCode;
-
-  try {
-    formattedCode = prettifyCode(allCode);
-  } catch (error) {
-    console.error('Error formatting code. Trying to save anyways', error);
-  }
-
-  return formattedCode;
-};
+const { deriveInterfaceFromObject } = require('./helpers');
 
 if (require.main === module) {
   const program = new Command();
@@ -86,7 +36,7 @@ if (require.main === module) {
           objectToDeriveFrom = jsFile;
         }
 
-        const formattedCode = await deriveInterfaceFromObject(
+        const formattedCode = deriveInterfaceFromObject(
           objectToDeriveFrom,
           interfaceName,
           true,
@@ -107,5 +57,4 @@ if (require.main === module) {
 
 module.exports = {
   deriveInterfaceFromObject,
-  prettifyCode,
 };

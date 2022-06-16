@@ -3,6 +3,52 @@ const { startCase, toLower } = require('lodash');
 const prettier = require('prettier');
 
 /**
+ * Derive a TypeScript interface from a JavaScript object
+ * @param {Record<string, unknown>} object
+ * @param {string} interfaceName Name for the generated interface
+ * @param {boolean} formatCode If the code should be prettified or not
+ * @returns {string}
+ */
+const deriveInterfaceFromObject = (
+  object,
+  interfaceName = 'MyInterface',
+  formatCode = true,
+  subInterfaces = false,
+) => {
+  const interfaces = {};
+  const interfaceCode = identifyType(object, null, subInterfaces ? interfaces : null);
+  const fullInterface = `export interface ${interfaceName} ${interfaceCode}`;
+  let allCode = null;
+
+  if (subInterfaces) {
+    allCode =
+      `
+      ${Object.keys(interfaces)
+        .map(
+          (key) => `
+        export interface ${key} {
+          ${interfaces[key]}
+        }
+      `,
+        )
+        .join('\n')}
+    ` + fullInterface;
+  } else {
+    allCode = fullInterface;
+  }
+
+  if (!formatCode) {
+    return allCode;
+  }
+
+  try {
+    return prettifyCode(allCode);
+  } catch (error) {
+    console.error('Error formatting code. Trying to save anyways', error);
+  }
+};
+
+/**
  * Convert a string to Pascal Case (TitleCase)
  * @param {string} str String to convert to Pascal case
  * @returns {string} Converted string
@@ -14,7 +60,7 @@ const pascalCase = (str) => {
 /**
  *  Derive a type from a value (usually start with an object)
  * @param {string | number | boolean | unknown[] | Record<string, unknown> | unknown} value
- * @param {*} key
+ * @param {string} key
  * @param {*} interfaces
  * @returns
  */
@@ -30,7 +76,17 @@ const identifyType = (value, key, interfaces) => {
       return 'unknown[]';
     }
 
-    return `${identifyType(value[0], key, interfaces)}[]`;
+    const types = {};
+
+    value.forEach((v) => {
+      const type = identifyType(v, key, interfaces);
+      types[type] = true;
+    });
+
+    const typesArr = Object.keys(types);
+    const type = typesArr.length > 1 ? `(${typesArr.join('|')})` : typesArr[0];
+
+    return `${type}[]`;
   } else if (value === undefined || value === null) {
     return 'unknown';
   } else {
@@ -38,7 +94,7 @@ const identifyType = (value, key, interfaces) => {
 
     const subInterface = Object.entries(value)
       .map(([key, subValue]) => `${key}: ${identifyType(subValue, key, interfaces)}`)
-      .join(';\n');
+      .join(';');
 
     if (interfaces && key) {
       interfaces[interfaceName] = subInterface;
@@ -63,6 +119,7 @@ const prettifyCode = (codeStr, prettierConfig = {}) => {
 };
 
 module.exports = {
+  deriveInterfaceFromObject,
   pascalCase,
   identifyType,
   prettifyCode,

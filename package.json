@@ -1,28 +1,38 @@
 {
   "name": "derive-ts",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Jake Cyr",
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "https://github.com/jakecyr/derive-ts.git"
   },
-  "description": "Simple library to derive TypeScript interfaces from JS object examples",
+  "description": "Simple library to derive TypeScript interfaces from JS object / JSON examples",
   "main": "index.js",
   "bin": "index.js",
   "dependencies": {
-    "commander": "^8.1.0",
-    "fs-extra": "^10.0.0",
+    "commander": "^9.3.0",
+    "fs-extra": "^10.1.0",
     "lodash": "^4.17.21",
-    "prettier": "^2.3.2"
+    "prettier": "^2.7.0"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "keywords": [
     "typescript",
     "interface",
     "type",
-    "derive"
-  ]
+    "derive",
+    "json",
+    "javascript"
+  ],
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^28.1.1",
+    "@types/lodash": "^4.14.182",
+    "@types/prettier": "^2.6.3",
+    "jest": "^28.1.1"
+  }
 }

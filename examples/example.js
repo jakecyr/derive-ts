@@ -1,4 +1,5 @@
 exports.example = {
+  tags: ['food', 'bar', 1],
   address_components: [
     { long_name: '8035', short_name: '8035', types: ['street_number'] },
     { long_name: 'Market Street', short_name: 'Market St', types: ['route'] },
