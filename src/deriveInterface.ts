@@ -10,7 +10,6 @@ import { identifyType } from './identifyType';
 export const deriveInterfaceFromObject = (
   object: any,
   interfaceName: string = 'MyInterface',
-  formatCode: boolean = true,
   subInterfaces: boolean = false,
 ) => {
   const interfaces = {};
@@ -33,10 +32,6 @@ export const deriveInterfaceFromObject = (
     ` + fullInterface;
   } else {
     allCode = fullInterface;
-  }
-
-  if (!formatCode) {
-    return allCode;
   }
 
   return allCode;

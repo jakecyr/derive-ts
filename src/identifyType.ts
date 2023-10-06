@@ -1,5 +1,13 @@
 import { pascalCase } from './textFormatters';
 
+const getFormattedKey = (key: string) => {
+  if (key.includes('/') || key.includes('@')) {
+    return `"${key}"`;
+  }
+
+  return key;
+};
+
 /**
  *  Derive a type from a value (usually start with an object)
  * @param {string | number | boolean | unknown[] | Record<string, unknown> | unknown} value
@@ -36,7 +44,9 @@ export const identifyType = (value: any, key?: string, interfaces?: any) => {
     const interfaceName = pascalCase(key);
 
     const subInterface = Object.entries(value)
-      .map(([key, subValue]) => `${key}: ${identifyType(subValue, key, interfaces)}`)
+      .map(
+        ([key, subValue]) => `${getFormattedKey(key)}: ${identifyType(subValue, key, interfaces)}`,
+      )
       .join(';');
 
     if (interfaces && key) {

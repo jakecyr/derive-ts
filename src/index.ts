@@ -3,6 +3,7 @@ import { writeFile } from 'fs-extra';
 import * as path from 'path';
 import { Command } from 'commander';
 import { deriveInterfaceFromObject } from './deriveInterface';
+import { prettifyCode } from './prettifyCode';
 
 const deriveInterface = async (
   inputFilePath: string,
@@ -27,12 +28,8 @@ const deriveInterface = async (
     objectToDeriveFrom = jsFile;
   }
 
-  const formattedCode = deriveInterfaceFromObject(
-    objectToDeriveFrom,
-    interfaceName,
-    true,
-    subInterfaces,
-  );
+  const code = deriveInterfaceFromObject(objectToDeriveFrom, interfaceName, subInterfaces);
+  const formattedCode = prettifyCode(code);
 
   if (!outputFile) {
     return console.log(formattedCode);
@@ -56,7 +53,18 @@ const main = () => {
         inputFilePath,
         { interfaceName = 'MyInterface', importName, outputFile, subInterfaces },
       ) => {
-        await deriveInterface(inputFilePath, importName, outputFile, interfaceName, subInterfaces);
+        try {
+          await deriveInterface(
+            inputFilePath,
+            importName,
+            outputFile,
+            interfaceName,
+            subInterfaces,
+          );
+        } catch (error) {
+          console.error('Error while deriving interface');
+
+        }
       },
     );
 
