@@ -1,6 +1,7 @@
-const { deriveInterfaceFromObject } = require('../index');
-const exampleObject = require('./example');
-const fs = require('fs');
+import { deriveInterfaceFromObject } from '../dist/deriveInterface';
+import exampleObject from './example';
+import * as fs from 'fs';
+import { prettifyCode } from '../dist/prettifyCode';
 
 describe('test example', () => {
   it('produces the correct interface', async () => {
@@ -9,9 +10,9 @@ describe('test example', () => {
       'LocationSearch',
       true,
     );
-
+    const prettifiedCode = prettifyCode(derivedInterface);
     const expectedInterface = fs.readFileSync('./examples/expected.ts').toString();
 
-    expect(derivedInterface).toEqual(expectedInterface);
+    expect(prettifiedCode).toEqual(expectedInterface);
   });
 });
